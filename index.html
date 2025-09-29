@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbe Only</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #007bff; /* Default client color */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            transition: background-color 0.5s ease;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .store-card, .barber-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        .store-card h3, .barber-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .logout-btn {
+            background-color: #f44336;
+            margin-top: 20px;
+        }
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+        /* ESTILO AÑADIDO: Botón Primario para Cliente (Azul) */
+        .btn-primary-client {
+            background-color: #007bff; 
+            margin-top: 10px;
+        }
+        .btn-primary-client:hover {
+            background-color: #0056b3; 
+        }
+        /* Fin Estilo Añadido */
+        .user-switcher {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .user-switcher button {
+            width: auto;
+            padding: 10px 20px;
+            margin: 0 5px;
+        }
+
+        /* Views Styles */
+        body.client-view { background-color: #007bff; }
+        body.barber-view { background-color: #dc3545; }
+        body.admin-view { background-color: #fff; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 300px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333;
+        }
+        .modal-content p {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        /* Admin/Barber Panel Styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+
+        /* ... (rest of CSS remains the same) ... */
+
+        .add-form, .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+
+        /* Floating Buttons */
+        #admin-access-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 1.5em; /* Icon size */
+            background-color: #000;
+            color: #fff;
+            border-radius: 4px;
+            z-index: 100;
+        }
+        #client-menu-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 1.5em;
+            background-color: #000;
+            color: #fff;
+            border-radius: 4px;
+            z-index: 100;
+        }
+
+        /* New buttons for actions */
+        .action-buttons button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            margin: 2px;
+        }
+        .action-buttons .delete { background-color: #f44336; }
+        .action-buttons .delete:hover { background-color: #d32f2f; }
+        .action-buttons .block { background-color: #ff9800; }
+        .action-buttons .block:hover { background-color: #e68a00; }
+        .action-buttons .unblock { background-color: #4CAF50; }
+        .action-buttons .unblock:hover { background-color: #45a049; }
+
+        /* Store Card Grid */
+        #stores-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        .store-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .store-card:hover {
+            transform: translateY(-5px);
+        }
+        .store-image-container {
+            width: 100%;
+            height: 150px;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-style: italic;
+            color: #888;
+            overflow: hidden;
+        }
+        .store-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .store-info {
+            padding: 15px;
+        }
+        .store-info h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .store-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        /* Profile Section */
+        #profile-section {
+            text-align: center;
+        }
+        .profile-photo-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #profile-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #upload-photo-btn {
+            width: auto;
+            margin-top: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        /* Barber Card Styles */
+        .barber-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .barber-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .barber-info h3 {
+            margin: 0;
+        }
+        .barber-info p {
+            margin: 5px 0 0;
+            font-size: 0.9em;
+        }
+        .barber-card button {
+            width: auto;
+            padding: 8px 15px;
+        }
+        .barber-action-btn.finish {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .barber-action-btn.reject {
+            background-color: #f44336;
+            color: white;
+        }
+        .barber-action-btn.approve { /* NEW STYLE */
+            background-color: #007bff;
+            color: white;
+        }
+        .barber-action-btn.finish:hover {
+            background-color: #45a049;
+        }
+        .barber-action-btn.reject:hover {
+            background-color: #d32f2f;
+        }
+        .barber-action-btn.approve:hover { /* NEW STYLE */
+            background-color: #0056b3;
+        }
+        /* New menu styles for barber */
+        #barber-menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 101;
+        }
+        #barber-menu-btn {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 1.5em;
+            background-color: #000;
+            color: #fff;
+            border-radius: 4px;
+            z-index: 100;
+        }
+        #barber-menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            z-index: 102;
+        }
+        #barber-menu-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+        }
+        .availability-day-btn {
+            width: 100px;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f44336; /* Default: Unavailable (Red) */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .availability-day-btn.available {
+            background-color: #4CAF50; /* Available (Green) */
+            color: white;
+        }
+        .availability-day-btn:hover {
+            opacity: 0.8;
+        }
+        .availability-day-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .availability-message {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .availability-message.available {
+            color: #4CAF50;
+        }
+        .availability-message.unavailable {
+            color: #f44336;
+        }
+        #whatsapp-broadcast-container {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<button id="admin-access-btn" onclick="switchView('admin')" title="Acceso de Administrador">&#128100;</button>
+
+<div class="container">
+    <img id="main-logo" src="" alt="Logo de Barbe Only" style="max-width: 150px; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
+    <h1 class="header" id="main-header"></h1>
+
+    <div class="user-switcher" id="main-user-switcher">
+        <button onclick="switchView('client')">Soy Cliente</button>
+        <button onclick="switchView('barber')">Soy Barbero</button>
+    </div>
+
+    <div id="client-view" class="section active">
+        <div id="client-menu-container" style="display: none; position: fixed; top: 10px; left: 10px; z-index: 101;">
+            <button id="client-menu-btn" onclick="toggleClientMenu()">☰</button>
+            <div id="client-menu-dropdown" style="display: none; position: absolute; top: 50px; left: 0; background-color: #333; color: #fff; padding: 10px; border-radius: 4px; z-index: 102;">
+                <button style="display: block; width: 100%; text-align: left;" onclick="showClientProfile()">Perfil</button>
+                <button style="display: block; width: 100%; text-align: left;" onclick="showChangeNumber()">Cambiar Número</button>
+                <button style="display: block; width: 100%; text-align: left;" onclick="showClientAppointments()">Mis Citas</button> <button style="display: block; width: 100%; text-align: left;" onclick="logoutClient()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div id="client-login-section">
+            <h2>Iniciar Sesión</h2>
+            <div class="form-group">
+                <label for="whatsapp-number-login">Número de WhatsApp</label>
+                <input type="tel" id="whatsapp-number-login" placeholder="+52 55 1234 5678" required>
+            </div>
+            <button onclick="loginClient()">Ingresar</button>
+            <button class="btn-primary-client" onclick="showRegisterForm()">Nuevo Cliente, Regístrate</button>
+        </div>
+
+        <div id="register-section" style="display: none;">
+            <h2>Regístrate</h2>
+            <div class="form-group">
+                <label for="client-name">Nombre</label>
+                <input type="text" id="client-name" required>
+            </div>
+            <div class="form-group">
+                <label for="client-lastname">Apellido</label>
+                <input type="text" id="client-lastname" required>
+            </div>
+            <div class="form-group">
+                <label for="whatsapp-number-register">Número de WhatsApp</label>
+                <input type="tel" id="whatsapp-number-register" placeholder="+52 55 1234 5678" required>
+            </div>
+            <button onclick="registerClient()">Registrar</button>
+            <button class="btn-secondary" onclick="showClientLogin()">Cancelar</button>
+        </div>
+
+        <div id="store-list-section" style="display: none;">
+            <h2>Selecciona una Barbería</h2>
+            <div id="stores-container"></div>
+        </div>
+
+        <div id="barber-list-section" style="display: none;">
+            <h2 id="current-store-name"></h2>
+            <div id="barbers-container"></div>
+            <button class="btn-secondary" onclick="goBackToStores()">Volver</button>
+        </div>
+
+        <div id="book-appointment-section" style="display: none;">
+            <h2>Agendar Cita con <span id="barber-name"></span></h2>
+            <p>en <span id="store-name-booking"></span></p>
+            <div class="form-group">
+                <label for="appointment-date">Fecha</label>
+                <input type="date" id="appointment-date" required>
+                <p id="availability-status" class="availability-message"></p>
+            </div>
+            <div class="form-group">
+                <label for="appointment-time">Hora</label>
+                <input type="time" id="appointment-time" required>
+            </div>
+            <div class="form-group">
+                <label for="appointment-service">Servicio (Describe tu corte)</label>
+                <textarea id="appointment-service" rows="3" required></textarea>
+            </div>
+            <button id="book-appointment-btn" onclick="bookAppointment()" disabled>Confirmar Cita</button>
+            <button class="btn-secondary" onclick="goBackToBarbers()">Volver</button>
+        </div>
+
+        <div id="confirmation-section" style="display: none;">
+            <h2>¡Cita Agendada!</h2>
+            <p style="color: orange; font-weight: bold; font-size: 1.2em;">SU CITA ESTÁ PENDIENTE. LE NOTIFICAREMOS CUANDO SU BARBERO ACEPTE.</p>
+            <p>Tu cita con <strong id="confirmed-barber"></strong> en <strong id="confirmed-store"></strong> ha sido agendada con éxito para la fecha <strong id="confirmed-date"></strong> a las <strong id="confirmed-time"></strong>.</p>
+            <p>Revisa el estado en la sección **Mis Citas**.</p>
+        </div>
+        
+        <div id="client-appointments-section" style="display: none;">
+            <h2>Mis Citas Agendadas</h2>
+            <p>Aquí puedes ver el estado de tus citas. **Recuerda:** Tu cita sólo es válida una vez que aparece como APROBADA.</p>
+            <table>
+                <thead>
+                    <tr> <th>Fecha</th> <th>Hora</th> <th>Barbero</th> <th>Servicio</th> <th>Estatus</th> </tr>
+                </thead>
+                <tbody id="client-appointments-table"></tbody>
+            </table>
+            <button class="btn-secondary" onclick="goBackToStores()">Volver</button>
+        </div>
+        <div id="profile-section" style="display: none;">
+            <h2>Mi Perfil</h2>
+            <div class="profile-photo-container">
+                <img id="profile-photo" src="" alt="Foto de Perfil">
+            </div>
+            <button id="upload-photo-btn" onclick="document.getElementById('profile-photo-input').click()">Cargar Foto</button>
+            <input type="file" id="profile-photo-input" style="display: none;" accept="image/*" onchange="previewProfilePhoto(event)">
+            <p><strong>Nombre:</strong> <span id="profile-name"></span></p>
+            <p><strong>WhatsApp:</strong> <span id="profile-whatsapp"></span></p>
+            <button class="btn-secondary" onclick="goBackToStores()">Volver</button>
+        </div>
+
+        <div id="change-number-section" style="display: none;">
+            <h2>Cambiar Número de WhatsApp</h2>
+            <div class="form-group">
+                <label for="new-number">Nuevo Número de WhatsApp</label>
+                <input type="tel" id="new-number" required>
+            </div>
+            <button onclick="changeWhatsAppNumber()">Guardar Cambios</button>
+            <button class="btn-secondary" onclick="goBackToStores()">Volver</button>
+        </div>
+    </div>
+
+    <div id="barber-view" class="section" style="display: none;">
+        <div id="barber-login-section">
+            <h2>Acceso de Barbero</h2>
+            <input type="text" id="barber-username" placeholder="Usuario">
+            <input type="password" id="barber-password" placeholder="Contraseña">
+            <button onclick="loginBarber()">Ingresar</button>
+        </div>
+
+        <div id="barber-panel-container" style="display: none;">
+            <div id="barber-menu">
+                <button id="barber-menu-btn" onclick="toggleBarberMenu()">☰</button>
+                <div id="barber-menu-dropdown">
+                    <button onclick="showBarberAppointments()">Próximas Citas</button>
+                    <button onclick="showBarberHistory()">Historial</button>
+                    <button onclick="showBarberAvailability()">Disponibilidad</button>
+                    <button onclick="showBarberProfile()">Mi Perfil</button>
+                </div>
+            </div>
+
+            <h2 id="barber-panel-title"></h2>
+
+            <div id="barber-appointments-section" class="section active">
+                <h3>Tus Próximas Citas</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="barber-appointments-table"></tbody>
+                </table>
+            </div>
+
+            <div id="barber-history-section" class="section">
+                <h3>Historial de Clientes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Cliente</th>
+                            <th>Estatus</th>
+                            <th>Servicio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="barber-history-table"></tbody>
+                </table>
+            </div>
+            
+            <div id="barber-availability-section" class="section">
+                <h3>Gestionar Disponibilidad</h3>
+                <div class="availability-day-container">
+                    <button class="availability-day-btn" id="day-0" onclick="toggleDayAvailability(0)">Domingo</button>
+                    <button class="availability-day-btn" id="day-1" onclick="toggleDayAvailability(1)">Lunes</button>
+                    <button class="availability-day-btn" id="day-2" onclick="toggleDayAvailability(2)">Martes</button>
+                    <button class="availability-day-btn" id="day-3" onclick="toggleDayAvailability(3)">Miércoles</button>
+                    <button class="availability-day-btn" id="day-4" onclick="toggleDayAvailability(4)">Jueves</button>
+                    <button class="availability-day-btn" id="day-5" onclick="toggleDayAvailability(5)">Viernes</button>
+                    <button class="availability-day-btn" id="day-6" onclick="toggleDayAvailability(6)">Sábado</button>
+                </div>
+                <div id="whatsapp-broadcast-container" style="display: none;">
+                    <h4>Clientes a notificar por cambios:</h4>
+                    <p>Copia los números y crea una lista de difusión en WhatsApp.</p>
+                    <p><strong>Copia y pega este texto:</strong></p>
+                    <textarea id="whatsapp-broadcast-text" rows="5" readonly style="width: 100%;"></textarea>
+                    <button onclick="copyBroadcastText()">Copiar Texto</button>
+                </div>
+            </div>
+
+            <div id="barber-profile-section" class="section">
+                <h3>Mi Perfil</h3>
+                <div class="profile-photo-container">
+                    <img id="barber-profile-photo" src="" alt="Foto de Perfil del Barbero">
+                </div>
+                <button id="upload-barber-photo-btn" onclick="document.getElementById('barber-profile-photo-input').click()">Cambiar Foto</button>
+                <input type="file" id="barber-profile-photo-input" style="display: none;" accept="image/*" onchange="previewBarberProfilePhoto(event)">
+                <p><strong>Nombre:</strong> <span id="barber-profile-name"></span></p>
+                <p><strong>WhatsApp:</strong> <span id="barber-profile-whatsapp"></span></p>
+                <p><strong>Peluquería:</strong> <span id="barber-profile-store"></span></p>
+            </div>
+            
+            <button class="logout-btn" onclick="logoutBarber()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div id="admin-view" class="section" style="display: none;">
+        <div id="admin-login-section">
+            <h2>Acceso de Administrador</h2>
+            <input type="text" id="admin-username" placeholder="Usuario">
+            <input type="password" id="admin-password" placeholder="Contraseña">
+            <button onclick="loginAdmin()">Ingresar</button>
+        </div>
+        
+        <div id="admin-panel-container" style="display: none;">
+            <h2>Panel de Administración</h2>
+            <nav>
+                <button id="dashboard-btn" class="active">Dashboard</button>
+                <button id="stores-btn">Peluquerías</button>
+                <button id="barbers-btn">Barberos</button>
+                <button id="clients-btn">Clientes</button>
+                <button id="appointments-btn">Citas</button>
+                <button onclick="logoutAdmin()">Cerrar Sesión</button>
+            </nav>
+
+            <div id="dashboard-section" class="section active">
+                <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                    <h3>Subir/Cambiar Logo Principal</h3>
+                    <p style="font-size: 0.9em; color: #555;">(Se mostrará en la parte superior de la aplicación)</p>
+                    <input type="file" id="main-logo-input" style="display: none;" accept="image/*" onchange="uploadMainLogo(event)">
+                    <button onclick="document.getElementById('main-logo-input').click()" style="width: auto; padding: 10px 20px;">Seleccionar Imagen</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Peluquerías Totales</h3>
+                        <p id="total-stores">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Barberos Totales</h3>
+                        <p id="total-barbers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Citas Agendadas</h3>
+                        <p id="total-appointments">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stores-section" class="section">
+                <h3>Gestión de Peluquerías</h3>
+                <div class="add-form">
+                    <h4>Agregar Nueva Peluquería</h4>
+                    <input type="text" id="new-store-name" placeholder="Nombre de la peluquería" required>
+                    <input type="text" id="new-store-address" placeholder="Dirección del local" required>
+                    <input type="file" id="new-store-photo" accept="image/*">
+                    <button onclick="addStore()">Agregar</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr> <th>Foto</th> <th>Nombre</th> <th>Dirección</th> <th>Acciones</th> </tr>
+                    </thead>
+                    <tbody id="stores-table-body"></tbody>
+                </table>
+            </div>
+
+            <div id="barbers-section" class="section">
+                <h3>Gestión de Barberos</h3>
+                <div class="add-form">
+                    <h4>Agregar Nuevo Barbero</h4>
+                    <input type="text" id="new-barber-name" placeholder="Nombre del barbero" required>
+                    <input type="text" id="new-barber-username" placeholder="Usuario para acceder" required>
+                    <input type="password" id="new-barber-password" placeholder="Contraseña" required>
+                    <input type="tel" id="new-barber-whatsapp" placeholder="WhatsApp del barbero" required>
+                    <select id="barber-store-select">
+                        <option value="">Selecciona una Peluquería</option>
+                    </select>
+                    <button onclick="addBarber()">Agregar</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr> <th>Nombre</th> <th>Peluquería</th> <th>Usuario</th> <th>WhatsApp</th> <th>Acciones/Estado</th> </tr> </thead>
+                    <tbody id="barbers-table-body"></tbody>
+                </table>
+            </div>
+
+            <div id="clients-section" class="section">
+                <h3>Gestión de Clientes</h3>
+                <table>
+                    <thead>
+                        <tr> <th>Nombre</th> <th>WhatsApp</th> <th>Acciones</th> </tr>
+                    </thead>
+                    <tbody id="clients-table-body"></tbody>
+                </table>
+            </div>
+
+            <div id="appointments-section" class="section">
+                <h3>Citas Agendadas</h3>
+                <table>
+                    <thead>
+                        <tr> <th>Fecha</th> <th>Hora</th> <th>Cliente</th> <th>Barbero</th> <th>Peluquería</th> <th>Servicio</th> <th>Estatus</th></tr>
+                    </thead>
+                    <tbody id="appointments-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="success-modal" class="modal">
+    <div class="modal-content">
+        <p>¡Gracias por registrarte en Barbe Only!</p>
+    </div>
+</div>
+
+<script>
+    let currentView = 'client';
+    let currentClientNumber = '';
+    let currentBarber = null;
+    let selectedStore = '';
+    let selectedBarber = '';
+    let selectedBarberObject = null;
+
+    if (!localStorage.getItem('stores')) localStorage.setItem('stores', '[]');
+    if (!localStorage.getItem('barbers')) localStorage.setItem('barbers', '[]');
+    if (!localStorage.getItem('appointments')) localStorage.setItem('appointments', '[]');
+    if (!localStorage.getItem('history')) localStorage.setItem('history', '[]'); 
+    if (!localStorage.getItem('clients')) localStorage.setItem('clients', '{}');
+    if (!localStorage.getItem('mainLogoUrl')) localStorage.setItem('mainLogoUrl', ''); // NUEVO: Inicializar URL del logo
+    const adminCredentials = { username: 'admin', password: 'admin' };
+
+    // Set min date for appointment input to prevent past bookings
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById('appointment-date');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+        }
+        loadMainLogo(); // NUEVO: Cargar logo al iniciar
+    });
+
+    // --- Core Functions ---
+    function loadMainLogo() {
+        const logoUrl = localStorage.getItem('mainLogoUrl');
+        const logoElement = document.getElementById('main-logo');
+        if (logoUrl) {
+            logoElement.src = logoUrl;
+        } else {
+            // Se puede establecer una imagen por defecto o dejar vacío si no hay logo
+            logoElement.src = ''; 
+        }
+    }
+
+    function switchView(view) {
+        currentView = view;
+        document.body.className = `${view}-view`;
+        document.getElementById('client-view').style.display = 'none';
+        document.getElementById('barber-view').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'none';
+        document.getElementById('main-header').textContent = `Barbe Only ${view.charAt(0).toUpperCase() + view.slice(1)}`;
+        document.getElementById('main-user-switcher').style.display = 'flex';
+        document.getElementById('client-menu-container').style.display = 'none'; 
+        document.getElementById('barber-menu').style.display = 'none'; 
+        loadMainLogo(); // Asegurarse que el logo cargue en cualquier vista
+
+        if (view === 'client') {
+            document.getElementById('client-view').style.display = 'block';
+            showClientLogin();
+        } else if (view === 'barber') {
+            document.getElementById('barber-view').style.display = 'block';
+            showBarberLogin();
+        } else if (view === 'admin') {
+            document.getElementById('admin-view').style.display = 'block';
+            showAdminLogin();
+        }
+    }
+
+    function toggleUserSwitcher(show) {
+        document.getElementById('main-user-switcher').style.display = show ? 'flex' : 'none';
+    }
+    
+    function toggleClientMenu() {
+        const menu = document.getElementById('client-menu-dropdown');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleBarberMenu() {
+        const menu = document.getElementById('barber-menu-dropdown');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function saveAndRenderAll() {
+        renderClientStores();
+        if (currentBarber) {
+            showBarberAppointments();
+            renderBarberProfile();
+            renderBarberAvailability();
+        }
+        renderDashboard();
+        renderAdminStores();
+        renderAdminBarbers();
+        renderAdminClients();
+        renderAdminAppointments();
+        updateStoreSelect();
+        loadMainLogo(); // NUEVO: Cargar logo
+    }
+
+    // --- Client Functions ---
+    function showClientLogin() {
+        document.getElementById('client-login-section').style.display = 'block';
+        document.getElementById('register-section').style.display = 'none';
+        document.getElementById('store-list-section').style.display = 'none';
+        document.getElementById('change-number-section').style.display = 'none';
+        document.getElementById('profile-section').style.display = 'none';
+        document.getElementById('client-appointments-section').style.display = 'none'; // NUEVO
+    }
+
+    function showRegisterForm() {
+        document.getElementById('client-login-section').style.display = 'none';
+        document.getElementById('register-section').style.display = 'block';
+    }
+
+    function loginClient() {
+        const number = document.getElementById("whatsapp-number-login").value;
+        const clients = JSON.parse(localStorage.getItem('clients')) || {};
+        const client = clients[number];
+
+        if (client) {
+            if (client.blocked) {
+                alert(client.blockedMessage || "Su cuenta ha sido suspendida. Contacte al administrador.");
+                return;
+            }
+            currentClientNumber = number;
+            renderClientStores();
+            document.getElementById('client-login-section').style.display = 'none';
+            document.getElementById('store-list-section').style.display = 'block';
+            document.getElementById('client-menu-container').style.display = 'block';
+            toggleUserSwitcher(false);
+        } else {
+            alert("El número no está registrado. Por favor, regístrate primero.");
+        }
+    }
+
+    function registerClient() {
+        const name = document.getElementById("client-name").value;
+        const lastname = document.getElementById("client-lastname").value;
+        const number = document.getElementById("whatsapp-number-register").value;
+        let clients = JSON.parse(localStorage.getItem('clients')) || {};
+
+        if (name && lastname && number) {
+            if (clients[number]) {
+                alert("Este número ya está registrado. Por favor, inicia sesión.");
+                return;
+            }
+
+            clients[number] = { 
+                name: name, 
+                lastname: lastname, 
+                blocked: false, 
+                blockedMessage: "", 
+                photo: "" 
+            };
+            localStorage.setItem('clients', JSON.stringify(clients));
+
+            document.getElementById('success-modal').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('success-modal').style.display = 'none';
+                document.getElementById("whatsapp-number-login").value = number;
+                showClientLogin();
+            }, 2000);
+        } else {
+            alert("Por favor, completa todos los campos.");
+        }
+    }
+
+    function logoutClient() {
+        window.location.reload();
+    }
+
+    function renderClientStores() {
+        hideAllClientSections();
+        const stores = JSON.parse(localStorage.getItem('stores')) || [];
+        const storesContainer = document.getElementById('stores-container');
+        storesContainer.innerHTML = '';
+
+        if (stores.length === 0) {
+            storesContainer.innerHTML = `<p style="text-align: center;">No hay peluquerías disponibles en este momento.</p>`;
+            return;
+        }
+
+        stores.forEach(store => {
+            const storeCard = document.createElement('div');
+            storeCard.className = 'store-card';
+            storeCard.innerHTML = `
+                <div class="store-image-container">
+                    ${store.photo ? `<img src="${store.photo}" alt="${store.name}" class="store-image">` : `<span>Sin Foto</span>`}
+                </div>
+                <div class="store-info">
+                    <h3>${store.name}</h3>
+                    <p>${store.address || ''}</p>
+                    <button onclick="showClientBarbers('${store.name}')">Ver Barberos</button>
+                </div>
+            `;
+            storesContainer.appendChild(storeCard);
+        });
+
+        document.getElementById('store-list-section').style.display = 'block';
+    }
+
+    function showClientBarbers(storeName) {
+        hideAllClientSections();
+        selectedStore = storeName;
+        document.getElementById("current-store-name").textContent = storeName;
+        const barbersContainer = document.getElementById("barbers-container");
+        barbersContainer.innerHTML = '';
+        const barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const barbersInStore = barbers.filter(b => b.store === storeName);
+
+        if (barbersInStore.length === 0) {
+            barbersContainer.innerHTML = `<p style="text-align: center;">No hay barberos disponibles en esta peluquería.</p>`;
+        } else {
+            barbersInStore.forEach(barber => {
+                // Ocultar barberos bloqueados para los clientes
+                if (barber.blocked) return; 
+                
+                const barberCard = document.createElement('div');
+                barberCard.className = 'barber-card';
+                barberCard.innerHTML = `
+                    <div class="barber-info">
+                        <h3>${barber.name}</h3>
+                        <p>WhatsApp: ${barber.whatsapp}</p>
+                    </div>
+                    <button onclick="showBookingForm('${barber.name}')">Agendar Cita</button>
+                `;
+                barbersContainer.appendChild(barberCard);
+            });
+        }
+
+        document.getElementById('barber-list-section').style.display = 'block';
+    }
+
+    function showBookingForm(barberName) {
+        hideAllClientSections();
+        selectedBarber = barberName;
+        const barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        selectedBarberObject = barbers.find(b => b.name === barberName);
+
+        // Doble verificación: Si el barbero está bloqueado, no mostrar el formulario.
+        if (selectedBarberObject && selectedBarberObject.blocked) {
+             alert(`El barbero ${barberName} no está disponible en este momento. Por favor, selecciona otro.`);
+             goBackToStores(); // Volver a la lista de tiendas o barberos
+             return;
+        }
+
+        document.getElementById("barber-name").textContent = barberName;
+        document.getElementById("store-name-booking").textContent = selectedStore;
+        document.getElementById('book-appointment-section').style.display = 'block';
+
+        const dateInput = document.getElementById('appointment-date');
+        const availabilityStatus = document.getElementById('availability-status');
+        const bookButton = document.getElementById('book-appointment-btn');
+
+        // Limpiar campos y estado al abrir el formulario
+        dateInput.value = '';
+        document.getElementById("appointment-time").value = '';
+        document.getElementById("appointment-service").value = '';
+        availabilityStatus.textContent = "Selecciona una fecha para verificar disponibilidad.";
+        availabilityStatus.className = "availability-message";
+        bookButton.disabled = true;
+
+        // Asegurar que la fecha mínima es hoy
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+
+        dateInput.onchange = () => {
+            const selectedDateValue = dateInput.value;
+            if (!selectedDateValue) {
+                availabilityStatus.textContent = "Selecciona una fecha para verificar disponibilidad.";
+                availabilityStatus.className = "availability-message";
+                bookButton.disabled = true;
+                return;
+            }
+
+            // INICIO DE LA CORRECCIÓN DE CONSISTENCIA DE NAVEGADOR
+            const date = new Date(selectedDateValue + 'T00:00:00'); // Forzar zona horaria local
+            // FIN DE LA CORRECCIÓN
+            const dayOfWeek = date.getDay(); 
+
+            // FIX: Ensure selectedBarberObject exists and availability property is used
+            const availabilityArray = selectedBarberObject?.availability || [false, false, false, false, false, false, false];
+            const isAvailable = availabilityArray[dayOfWeek];
+
+            if (isAvailable) {
+                availabilityStatus.textContent = "DISPONIBLE";
+                availabilityStatus.className = "availability-message available";
+                bookButton.disabled = false; // Habilitar el botón si está disponible
+            } else {
+                availabilityStatus.textContent = "NO DISPONIBLE";
+                availabilityStatus.className = "availability-message unavailable";
+                bookButton.disabled = true; // Deshabilitar si no está disponible
+            }
+        };
+    }
+
+    function bookAppointment() {
+        const date = document.getElementById("appointment-date").value;
+        const time = document.getElementById("appointment-time").value;
+        const service = document.getElementById("appointment-service").value;
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        const clients = JSON.parse(localStorage.getItem('clients')) || {};
+
+        // INICIO DE LA CORRECCIÓN DE CONSISTENCIA DE NAVEGADOR
+        const dateObj = new Date(date + 'T00:00:00'); // Consistencia de navegador
+        const dayOfWeek = dateObj.getDay();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalizar hoy a medianoche local
+
+        // NUEVA VALIDACIÓN: No agendar citas para fechas pasadas.
+        if (dateObj < today) {
+            alert("No puedes agendar citas para fechas pasadas.");
+            return;
+        }
+        // FIN DE LA CORRECCIÓN
+
+        if (date && time && service && selectedBarber && selectedStore) {
+            // Re-validación de disponibilidad justo antes de agendar
+            const availabilityArray = selectedBarberObject.availability || [false, false, false, false, false, false, false];
+            if (!availabilityArray[dayOfWeek]) {
+                alert("Este barbero no está disponible el día seleccionado. Por favor, elige otra fecha.");
+                return;
+            }
+
+            const clientInfo = clients[currentClientNumber];
+            const newAppointment = {
+                date: date,
+                time: time,
+                client: clientInfo.name + ' ' + clientInfo.lastname,
+                clientNumber: currentClientNumber,
+                barber: selectedBarber,
+                store: selectedStore,
+                service: service,
+                status: 'pending_barber_approval' // CAMBIO: Estado inicial requiere aprobación
+            };
+
+            appointments.push(newAppointment);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+
+            document.getElementById("confirmed-barber").textContent = selectedBarber;
+            document.getElementById("confirmed-store").textContent = selectedStore;
+            document.getElementById("confirmed-date").textContent = date;
+            document.getElementById("confirmed-time").textContent = time;
+
+            // Lógica de mensaje de confirmación mejorada
+            document.getElementById('confirmation-section').innerHTML = `
+                <h2>¡Cita Solicitada!</h2>
+                <p style="color: orange; font-weight: bold; font-size: 1.2em;">SU CITA ESTÁ PENDIENTE. LE NOTIFICAREMOS CUANDO SU BARBERO ACEPTE.</p>
+                <p>Tu cita con <strong>${selectedBarber}</strong> en <strong>${selectedStore}</strong> ha sido agendada con éxito para la fecha <strong>${date}</strong> a las <strong>${time}</strong>.</p>
+                <p>Revisa el estado en la sección <strong>Mis Citas</strong>.</p>
+            `;
+
+            hideAllClientSections();
+            document.getElementById('confirmation-section').style.display = 'block';
+            saveAndRenderAll();
+        } else {
+            alert("Por favor, completa todos los campos (Fecha, Hora y Servicio) para agendar tu cita.");
+        }
+    }
+
+    function goBackToStores() {
+        renderClientStores();
+    }
+
+    function goBackToBarbers() {
+        hideAllClientSections();
+        document.getElementById('barber-list-section').style.display = 'block';
+    }
+
+    function hideAllClientSections() {
+        document.getElementById('store-list-section').style.display = 'none';
+        document.getElementById('barber-list-section').style.display = 'none';
+        document.getElementById('book-appointment-section').style.display = 'none';
+        document.getElementById('confirmation-section').style.display = 'none';
+        document.getElementById('profile-section').style.display = 'none';
+        document.getElementById('change-number-section').style.display = 'none';
+        document.getElementById('client-appointments-section').style.display = 'none'; // NUEVO: Mis Citas
+        document.getElementById('client-menu-dropdown').style.display = 'none';
+    }
+
+    function showClientAppointments() {
+        hideAllClientSections();
+        const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        const history = JSON.parse(localStorage.getItem('history')) || []; // Incluimos historial para evitar que la tabla se vea vacía
+        const allAppointments = [...appointments, ...history];
+        const tableBody = document.getElementById('client-appointments-table');
+        tableBody.innerHTML = '';
+
+        const clientAppointments = allAppointments.filter(app => app.clientNumber === currentClientNumber);
+
+        if (clientAppointments.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No tienes citas agendadas o en historial.</td></tr>';
+        } else {
+            // Ordenar por fecha y hora (más reciente primero)
+            clientAppointments.sort((a, b) => {
+                const dateTimeA = new Date(a.date + ' ' + a.time);
+                const dateTimeB = new Date(b.date + ' ' + b.time);
+                return dateTimeB - dateTimeA; // Descendente
+            });
+
+            clientAppointments.forEach(app => {
+                const row = tableBody.insertRow();
+                let statusText = '';
+                switch (app.status) {
+                    case 'pending_barber_approval':
+                        statusText = `<span style="color: orange; font-weight: bold;">PENDIENTE</span>`;
+                        break;
+                    case 'approved':
+                        statusText = `<span style="color: green; font-weight: bold;">APROBADA</span>`;
+                        break;
+                    case 'rejected_barber':
+                        statusText = `<span style="color: red; font-weight: bold;">RECHAZADA</span>`;
+                        break;
+                    case 'completed':
+                        statusText = `<span style="color: blue;">COMPLETADA</span>`;
+                        break;
+                    default:
+                        statusText = app.status;
+                }
+                
+                row.innerHTML = `
+                    <td>${app.date}</td>
+                    <td>${app.time}</td>
+                    <td>${app.barber}</td>
+                    <td>${app.service}</td>
+                    <td>${statusText}</td>
+                `;
+            });
+        }
+        document.getElementById('client-appointments-section').style.display = 'block';
+    }
+
+    function showClientProfile() {
+        hideAllClientSections();
+        const clients = JSON.parse(localStorage.getItem('clients')) || {};
+        const client = clients[currentClientNumber];
+
+        document.getElementById('profile-name').textContent = `${client.name} ${client.lastname}`;
+        document.getElementById('profile-whatsapp').textContent = currentClientNumber;
+        document.getElementById('profile-photo').src = client.photo || 'https://via.placeholder.com/150/007bff/fff?text=Cliente';
+
+        document.getElementById('profile-section').style.display = 'block';
+    }
+
+    function previewProfilePhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoUrl = e.target.result;
+                document.getElementById('profile-photo').src = photoUrl;
+                
+                // Guardar foto en localStorage
+                let clients = JSON.parse(localStorage.getItem('clients')) || {};
+                if (clients[currentClientNumber]) {
+                    clients[currentClientNumber].photo = photoUrl;
+                    localStorage.setItem('clients', JSON.stringify(clients));
+                    alert("Foto de perfil actualizada.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function showChangeNumber() {
+        hideAllClientSections();
+        document.getElementById('new-number').value = currentClientNumber;
+        document.getElementById('change-number-section').style.display = 'block';
+    }
+
+    function changeWhatsAppNumber() {
+        const newNumber = document.getElementById('new-number').value;
+        if (!newNumber || newNumber === currentClientNumber) {
+            alert('Por favor, ingresa un número de WhatsApp nuevo y válido.');
+            return;
+        }
+
+        let clients = JSON.parse(localStorage.getItem('clients')) || {};
+
+        if (clients[newNumber]) {
+            alert('El nuevo número ya está en uso por otra cuenta.');
+            return;
+        }
+
+        // 1. Clonar y borrar la entrada antigua
+        const clientData = clients[currentClientNumber];
+        delete clients[currentClientNumber];
+
+        // 2. Crear la nueva entrada
+        clients[newNumber] = clientData;
+        localStorage.setItem('clients', JSON.stringify(clients));
+
+        // 3. Actualizar la sesión actual
+        currentClientNumber = newNumber;
+        alert('Número de WhatsApp actualizado con éxito. ¡Vuelve a Iniciar Sesión con el nuevo número!');
+
+        // Forzar cierre de sesión para que el cliente use el nuevo número
+        logoutClient();
+    }
+
+
+    // --- Barber Functions ---
+    function showBarberLogin() {
+        document.getElementById('barber-username').value = '';
+        document.getElementById('barber-password').value = '';
+        document.getElementById('barber-login-section').style.display = 'block';
+        document.getElementById('barber-panel-container').style.display = 'none';
+    }
+
+    function loginBarber() {
+        const username = document.getElementById("barber-username").value;
+        const password = document.getElementById("barber-password").value;
+        const barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const barber = barbers.find(b => b.username === username && b.password === password);
+
+        if (barber) {
+            // NUEVO: Verificación de bloqueo
+            if (barber.blocked) {
+                alert("Su cuenta de barbero ha sido bloqueada por el administrador.");
+                return;
+            }
+            // FIN NUEVO
+
+            currentBarber = barber;
+            document.getElementById('barber-login-section').style.display = 'none';
+            document.getElementById('barber-panel-container').style.display = 'block';
+            document.getElementById('barber-panel-title').textContent = `Bienvenido, ${barber.name}`;
+            document.getElementById('barber-menu').style.display = 'block'; 
+            toggleUserSwitcher(false);
+            showBarberAppointments();
+            renderBarberProfile();
+            renderBarberAvailability();
+        } else {
+            alert("Credenciales incorrectas.");
+        }
+    }
+
+    function logoutBarber() {
+        currentBarber = null;
+        window.location.reload();
+    }
+
+    function hideAllBarberSections() {
+        document.querySelectorAll('#barber-panel-container .section').forEach(sec => sec.style.display = 'none');
+        document.getElementById('barber-menu-dropdown').style.display = 'none';
+    }
+
+    function showBarberAppointments() {
+        hideAllBarberSections();
+        const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        const tableBody = document.getElementById('barber-appointments-table');
+        tableBody.innerHTML = '';
+
+        const barberAppointments = appointments.filter(app => 
+            app.barber === currentBarber.name && (app.status === 'pending_barber_approval' || app.status === 'approved')
+        );
+
+        if (barberAppointments.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No tienes citas pendientes o aprobadas.</td></tr>';
+        } else {
+            barberAppointments.forEach(app => {
+                const row = tableBody.insertRow();
+                
+                let actions = '';
+                if (app.status === 'pending_barber_approval') {
+                    actions = `
+                        <button class="barber-action-btn approve" onclick="handleAppointment('${app.clientNumber}', '${app.date}', '${app.time}', 'approved')">Aprobar</button>
+                        <button class="barber-action-btn reject" onclick="handleAppointment('${app.clientNumber}', '${app.date}', '${app.time}', 'rejected_barber')">Rechazar</button>
+                    `;
+                } else if (app.status === 'approved') {
+                    actions = `<button class="barber-action-btn finish" onclick="handleAppointment('${app.clientNumber}', '${app.date}', '${app.time}', 'completed')">Finalizar</button>`;
+                }
+
+                row.innerHTML = `
+                    <td>${app.date}</td>
+                    <td>${app.time}</td>
+                    <td>${app.client}</td>
+                    <td>${app.service} (${app.status === 'approved' ? 'APROBADA' : 'PENDIENTE'})</td>
+                    <td class="action-buttons">${actions}</td>
+                `;
+            });
+        }
+        document.getElementById('barber-appointments-section').style.display = 'block';
+    }
+
+    function showBarberHistory() {
+        hideAllBarberSections();
+        const history = JSON.parse(localStorage.getItem('history')) || [];
+        const tableBody = document.getElementById('barber-history-table');
+        tableBody.innerHTML = '';
+
+        const barberHistory = history.filter(app => app.barber === currentBarber.name);
+
+        if (barberHistory.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No tienes historial de citas.</td></tr>';
+        } else {
+            barberHistory.forEach(app => {
+                const row = tableBody.insertRow();
+                let statusText = '';
+                switch (app.status) {
+                    case 'rejected_barber':
+                        statusText = `<span style="color: red; font-weight: bold;">RECHAZADA</span>`;
+                        break;
+                    case 'completed':
+                        statusText = `<span style="color: blue; font-weight: bold;">COMPLETADA</span>`;
+                        break;
+                    default:
+                        statusText = app.status;
+                }
+                
+                row.innerHTML = `
+                    <td>${app.date}</td>
+                    <td>${app.time}</td>
+                    <td>${app.client}</td>
+                    <td>${statusText}</td>
+                    <td>${app.service}</td>
+                `;
+            });
+        }
+        document.getElementById('barber-history-section').style.display = 'block';
+    }
+
+    function handleAppointment(clientNumber, date, time, newStatus) {
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        
+        const appointmentIndex = appointments.findIndex(app => 
+            app.clientNumber === clientNumber && 
+            app.date === date && 
+            app.time === time &&
+            app.barber === currentBarber.name
+        );
+
+        if (appointmentIndex !== -1) {
+            const appointment = appointments[appointmentIndex];
+            appointment.status = newStatus;
+
+            if (newStatus === 'completed' || newStatus === 'rejected_barber') {
+                // Mover a historial
+                history.push(appointment);
+                appointments.splice(appointmentIndex, 1);
+                localStorage.setItem('history', JSON.stringify(history));
+                alert(`Cita del cliente ${appointment.client} ha sido ${newStatus === 'completed' ? 'FINALIZADA' : 'RECHAZADA'} y movida al historial.`);
+            } else {
+                // Solo actualizar el estado (a 'approved')
+                appointments[appointmentIndex] = appointment;
+                alert(`Cita del cliente ${appointment.client} ha sido APROBADA.`);
+            }
+
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            showBarberAppointments(); // Refrescar la vista
+        } else {
+            alert("Error: Cita no encontrada o ya ha sido procesada.");
+        }
+        saveAndRenderAll();
+    }
+    
+    function showBarberProfile() {
+        hideAllBarberSections();
+        document.getElementById('barber-profile-name').textContent = currentBarber.name;
+        document.getElementById('barber-profile-whatsapp').textContent = currentBarber.whatsapp;
+        document.getElementById('barber-profile-store').textContent = currentBarber.store;
+        document.getElementById('barber-profile-photo').src = currentBarber.photo || 'https://via.placeholder.com/150/dc3545/fff?text=Barbero';
+
+        document.getElementById('barber-profile-section').style.display = 'block';
+    }
+
+    function previewBarberProfilePhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoUrl = e.target.result;
+                document.getElementById('barber-profile-photo').src = photoUrl;
+                
+                // Guardar foto en localStorage
+                let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+                const barberIndex = barbers.findIndex(b => b.username === currentBarber.username);
+
+                if (barberIndex !== -1) {
+                    barbers[barberIndex].photo = photoUrl;
+                    localStorage.setItem('barbers', JSON.stringify(barbers));
+                    currentBarber.photo = photoUrl; // Actualizar objeto de sesión
+                    alert("Foto de perfil de barbero actualizada.");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function showBarberAvailability() {
+        hideAllBarberSections();
+        renderBarberAvailability();
+        document.getElementById('barber-availability-section').style.display = 'block';
+    }
+
+    function renderBarberAvailability() {
+        const availability = currentBarber.availability || [false, false, false, false, false, false, false];
+        for (let i = 0; i < 7; i++) {
+            const btn = document.getElementById(`day-${i}`);
+            if (btn) {
+                btn.className = availability[i] ? 'availability-day-btn available' : 'availability-day-btn';
+            }
+        }
+        renderBroadcastMessage(); // Actualizar mensaje de broadcast
+    }
+
+    function toggleDayAvailability(dayIndex) {
+        let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const barberIndex = barbers.findIndex(b => b.username === currentBarber.username);
+        
+        if (barberIndex !== -1) {
+            if (!barbers[barberIndex].availability) {
+                barbers[barberIndex].availability = [false, false, false, false, false, false, false];
+            }
+            barbers[barberIndex].availability[dayIndex] = !barbers[barberIndex].availability[dayIndex];
+            localStorage.setItem('barbers', JSON.stringify(barbers));
+            currentBarber = barbers[barberIndex]; // Actualizar objeto de sesión
+            renderBarberAvailability();
+            alert(`Disponibilidad actualizada para el día ${["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][dayIndex]}.`);
+        }
+    }
+
+    function renderBroadcastMessage() {
+        const availability = currentBarber.availability || [false, false, false, false, false, false, false];
+        const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const unavailableDays = dayNames.filter((_, index) => !availability[index]);
+        
+        const isCurrentlyAvailable = availability[new Date().getDay()];
+        
+        let broadcastText = `Hola! Soy ${currentBarber.name} de ${currentBarber.store}. `;
+        
+        if (!isCurrentlyAvailable) {
+            broadcastText += `¡Tengo un **AVISO IMPORTANTE**! Hoy **NO ESTOY DISPONIBLE** por lo que tu cita se verá afectada. Por favor, reagenda.`;
+        } else if (unavailableDays.length > 0) {
+            broadcastText += `Esta semana mi disponibilidad ha cambiado: ${unavailableDays.join(', ')} NO estaré disponible. ¡Gracias!`;
+        } else {
+            broadcastText += `¡Buenas noticias! Estaré disponible toda la semana. ¡Agenda tu cita!`;
+        }
+
+        document.getElementById('whatsapp-broadcast-text').value = broadcastText;
+        document.getElementById('whatsapp-broadcast-container').style.display = 'block';
+    }
+
+    function copyBroadcastText() {
+        const textarea = document.getElementById('whatsapp-broadcast-text');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // Para móviles
+        document.execCommand('copy');
+        alert("Texto copiado al portapapeles. ¡Pégalo en tu lista de difusión de WhatsApp!");
+    }
+
+
+    // --- Admin Functions ---
+    function showAdminLogin() {
+        document.getElementById('admin-username').value = '';
+        document.getElementById('admin-password').value = '';
+        document.getElementById('admin-login-section').style.display = 'block';
+        document.getElementById('admin-panel-container').style.display = 'none';
+    }
+
+    function loginAdmin() {
+        const username = document.getElementById("admin-username").value;
+        const password = document.getElementById("admin-password").value;
+
+        if (username === adminCredentials.username && password === adminCredentials.password) {
+            document.getElementById('admin-login-section').style.display = 'none';
+            document.getElementById('admin-panel-container').style.display = 'block';
+            toggleUserSwitcher(false);
+            // Mostrar Dashboard por defecto y renderizar todo
+            document.getElementById('dashboard-btn').click(); 
+        } else {
+            alert("Credenciales de administrador incorrectas.");
+        }
+    }
+
+    function logoutAdmin() {
+        window.location.reload();
+    }
+    
+    // NUEVO: Función para subir el logo
+    function uploadMainLogo(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const logoUrl = e.target.result;
+                localStorage.setItem('mainLogoUrl', logoUrl);
+                document.getElementById('main-logo').src = logoUrl;
+                alert("Logo principal actualizado con éxito.");
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    // FIN NUEVO
+
+    function renderDashboard() {
+        const stores = JSON.parse(localStorage.getItem('stores')) || [];
+        const barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+        document.getElementById('total-stores').textContent = stores.length;
+        document.getElementById('total-barbers').textContent = barbers.length;
+        document.getElementById('total-appointments').textContent = appointments.length;
+    }
+
+    function addStore() {
+        const name = document.getElementById('new-store-name').value;
+        const address = document.getElementById('new-store-address').value;
+        const photoFile = document.getElementById('new-store-photo').files[0];
+        
+        if (name && address) {
+            let stores = JSON.parse(localStorage.getItem('stores')) || [];
+            if (stores.some(s => s.name === name)) {
+                alert("Ya existe una peluquería con ese nombre.");
+                return;
+            }
+
+            const newStore = { name: name, address: address, photo: '' };
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newStore.photo = e.target.result;
+                    stores.push(newStore);
+                    localStorage.setItem('stores', JSON.stringify(stores));
+                    saveAndRenderAll();
+                    alert("Peluquería agregada con foto.");
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                stores.push(newStore);
+                localStorage.setItem('stores', JSON.stringify(stores));
+                saveAndRenderAll();
+                alert("Peluquería agregada sin foto.");
+            }
+        } else {
+            alert("Por favor, completa Nombre y Dirección de la peluquería.");
+        }
+    }
+
+    function deleteStore(storeName) {
+        if (!confirm(`¿Estás seguro de eliminar la peluquería ${storeName}? Se eliminarán los barberos asociados y sus citas.`)) return;
+
+        let stores = JSON.parse(localStorage.getItem('stores')) || [];
+        let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+
+        // Eliminar barberos y citas asociadas a la peluquería
+        const barbersToDelete = barbers.filter(b => b.store === storeName).map(b => b.name);
+
+        stores = stores.filter(s => s.name !== storeName);
+        barbers = barbers.filter(b => b.store !== storeName);
+        appointments = appointments.filter(app => app.store !== storeName);
+        history = history.filter(app => app.store !== storeName);
+
+        localStorage.setItem('stores', JSON.stringify(stores));
+        localStorage.setItem('barbers', JSON.stringify(barbers));
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        localStorage.setItem('history', JSON.stringify(history));
+
+        saveAndRenderAll();
+        alert(`Peluquería ${storeName} y sus datos asociados eliminados.`);
+    }
+
+    function renderAdminStores() {
+        const stores = JSON.parse(localStorage.getItem('stores')) || [];
+        const tableBody = document.getElementById('stores-table-body');
+        tableBody.innerHTML = '';
+
+        stores.forEach(store => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>${store.photo ? `<img src="${store.photo}" alt="Foto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` : 'Sin Foto'}</td>
+                <td>${store.name}</td>
+                <td>${store.address}</td>
+                <td class="action-buttons">
+                    <button class="delete" onclick="deleteStore('${store.name}')">Eliminar</button>
+                </td>
+            `;
+        });
+    }
+
+    function addBarber() {
+        const name = document.getElementById('new-barber-name').value;
+        const username = document.getElementById('new-barber-username').value;
+        const password = document.getElementById('new-barber-password').value;
+        const whatsapp = document.getElementById('new-barber-whatsapp').value;
+        const store = document.getElementById('barber-store-select').value;
+
+        if (name && username && password && whatsapp && store) {
+            let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+            if (barbers.some(b => b.username === username)) {
+                alert("Ya existe un barbero con ese nombre de usuario.");
+                return;
+            }
+
+            const newBarber = { 
+                name: name, 
+                username: username, 
+                password: password, 
+                whatsapp: whatsapp, 
+                store: store, 
+                photo: '',
+                availability: [false, false, false, false, false, false, false],
+                blocked: false // NUEVO: Inicialmente no bloqueado
+            };
+            
+            barbers.push(newBarber);
+            localStorage.setItem('barbers', JSON.stringify(barbers));
+            saveAndRenderAll();
+            alert("Barbero agregado.");
+        } else {
+            alert("Por favor, completa todos los campos y selecciona una peluquería.");
+        }
+    }
+
+    function deleteBarber(username) {
+        if (!confirm(`¿Estás seguro de eliminar al barbero con usuario ${username}? Se eliminarán sus citas.`)) return;
+
+        let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        
+        const barberToDelete = barbers.find(b => b.username === username);
+        if (!barberToDelete) return;
+
+        barbers = barbers.filter(b => b.username !== username);
+        appointments = appointments.filter(app => app.barber !== barberToDelete.name);
+        history = history.filter(app => app.barber !== barberToDelete.name);
+
+        localStorage.setItem('barbers', JSON.stringify(barbers));
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        localStorage.setItem('history', JSON.stringify(history));
+
+        saveAndRenderAll();
+        alert(`Barbero ${barberToDelete.name} y sus citas eliminadas.`);
+    }
+
+    // NUEVO: Función para bloquear/desbloquear Barbero
+    function toggleBarberBlock(username) {
+        let barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const barberIndex = barbers.findIndex(b => b.username === username);
+
+        if (barberIndex !== -1) {
+            // Asegurarse de que el campo 'blocked' exista y tenga un valor predeterminado (false)
+            const currentStatus = barbers[barberIndex].blocked || false;
+            barbers[barberIndex].blocked = !currentStatus;
+            
+            // Si se bloquea, también rechazar citas pendientes
+            if (barbers[barberIndex].blocked) {
+                let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+                let history = JSON.parse(localStorage.getItem('history')) || [];
+                const barberName = barbers[barberIndex].name;
+                
+                const appointmentsToMove = appointments.filter(app => 
+                    app.barber === barberName && (app.status === 'pending_barber_approval' || app.status === 'approved')
+                );
+                
+                appointments = appointments.filter(app => 
+                    app.barber !== barberName || (app.status !== 'pending_barber_approval' && app.status !== 'approved')
+                );
+                
+                appointmentsToMove.forEach(app => {
+                    app.status = 'rejected_barber_blocked'; // Nuevo estado para citas rechazadas por bloqueo
+                    history.push(app);
+                });
+                
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                localStorage.setItem('history', JSON.stringify(history));
+                
+                alert(`Barbero ${barbers[barberIndex].name} ha sido BLOQUEADO. ${appointmentsToMove.length} citas pendientes fueron rechazadas automáticamente.`);
+            } else {
+                alert(`Barbero ${barbers[barberIndex].name} ha sido DESBLOQUEADO.`);
+            }
+            
+            localStorage.setItem('barbers', JSON.stringify(barbers));
+            renderAdminBarbers(); // Re-renderizar la tabla
+        }
+    }
+    // FIN NUEVO
+
+    function renderAdminBarbers() {
+        const barbers = JSON.parse(localStorage.getItem('barbers')) || [];
+        const stores = JSON.parse(localStorage.getItem('stores')) || [];
+        const tableBody = document.getElementById('barbers-table-body');
+        tableBody.innerHTML = '';
+
+        barbers.forEach(barber => {
+            const row = tableBody.insertRow();
+            const storeName = stores.find(s => s.name === barber.store)?.name || 'N/A';
+            const isBlocked = barber.blocked || false;
+            
+            // Botón de Bloqueo/Desbloqueo
+            const blockButton = `<button class="action-buttons ${isBlocked ? 'unblock' : 'block'}" 
+                                   onclick="toggleBarberBlock('${barber.username}')">
+                                   ${isBlocked ? 'Desbloquear' : 'Bloquear'}
+                             </button>`;
+                             
+            // Indicador de estado
+            const statusText = isBlocked ? 
+                `<span style="color: red; font-weight: bold;">Bloqueado</span>` : 
+                `<span style="color: green;">Activo</span>`;
+
+            row.innerHTML = `
+                <td>${barber.name}</td>
+                <td>${storeName}</td>
+                <td>${barber.username}</td>
+                <td>${barber.whatsapp}</td>
+                <td class="action-buttons">
+                    <button class="delete" onclick="deleteBarber('${barber.username}')">Eliminar</button>
+                    ${blockButton} 
+                    <br><small>${statusText}</small>
+                </td>
+            `;
+        });
+    }
+
+
+    function toggleClientBlock(number, blockStatus) {
+        let clients = JSON.parse(localStorage.getItem('clients')) || {};
+        const client = clients[number];
+
+        if (client) {
+            client.blocked = blockStatus;
+            client.blockedMessage = blockStatus ? "Su cuenta ha sido suspendida. Contacte al administrador para más información." : "";
+
+            if (blockStatus) {
+                // Rechazar citas pendientes si se bloquea
+                let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+                let history = JSON.parse(localStorage.getItem('history')) || [];
+                
+                const appointmentsToMove = appointments.filter(app => 
+                    app.clientNumber === number && (app.status === 'pending_barber_approval' || app.status === 'approved')
+                );
+                
+                appointments = appointments.filter(app => 
+                    app.clientNumber !== number || (app.status !== 'pending_barber_approval' && app.status !== 'approved')
+                );
+                
+                appointmentsToMove.forEach(app => {
+                    app.status = 'rejected_client_blocked'; // Nuevo estado para citas rechazadas por bloqueo
+                    history.push(app);
+                });
+                
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                localStorage.setItem('history', JSON.stringify(history));
+                
+                alert(`Cliente ${client.name} bloqueado. ${appointmentsToMove.length} citas pendientes fueron rechazadas.`);
+            } else {
+                alert(`Cliente ${client.name} desbloqueado.`);
+            }
+
+            clients[number] = client;
+            localStorage.setItem('clients', JSON.stringify(clients));
+            renderAdminClients(); // Re-renderizar la tabla
+        }
+    }
+
+    function renderAdminClients() {
+        const clients = JSON.parse(localStorage.getItem('clients')) || {};
+        const tableBody = document.getElementById('clients-table-body');
+        tableBody.innerHTML = '';
+        const clientList = Object.keys(clients).map(key => ({ number: key, ...clients[key] }));
+
+        clientList.forEach(client => {
+            const row = tableBody.insertRow();
+            const isBlocked = client.blocked || false;
+            
+            const actionButton = isBlocked
+                ? `<button class="action-buttons unblock" onclick="toggleClientBlock('${client.number}', false)">Desbloquear</button>`
+                : `<button class="action-buttons block" onclick="toggleClientBlock('${client.number}', true)">Bloquear</button>`;
+                
+            const statusText = isBlocked ? 
+                `<span style="color: red; font-weight: bold;">Bloqueado</span>` : 
+                `<span style="color: green;">Activo</span>`;
+
+            row.innerHTML = `
+                <td>${client.name} ${client.lastname}</td>
+                <td>${client.number}</td>
+                <td class="action-buttons">
+                    ${actionButton}
+                    <br><small>${statusText}</small>
+                </td>
+            `;
+        });
+    }
+
+    function renderAdminAppointments() {
+        const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        const history = JSON.parse(localStorage.getItem('history')) || [];
+        const allAppointments = [...appointments, ...history];
+        const tableBody = document.getElementById('appointments-table-body');
+        tableBody.innerHTML = '';
+
+        // Ordenar por fecha y hora (más reciente primero)
+        allAppointments.sort((a, b) => {
+            const dateTimeA = new Date(a.date + ' ' + a.time);
+            const dateTimeB = new Date(b.date + ' ' + b.time);
+            return dateTimeB - dateTimeA; // Descendente
+        });
+
+        allAppointments.forEach(app => {
+            const row = tableBody.insertRow();
+            let statusText = '';
+            switch (app.status) {
+                case 'pending_barber_approval':
+                    statusText = `<span style="color: orange; font-weight: bold;">PENDIENTE</span>`;
+                    break;
+                case 'approved':
+                    statusText = `<span style="color: green; font-weight: bold;">APROBADA</span>`;
+                    break;
+                case 'rejected_barber':
+                case 'rejected_client_blocked':
+                case 'rejected_barber_blocked':
+                    statusText = `<span style="color: red; font-weight: bold;">RECHAZADA</span>`;
+                    break;
+                case 'completed':
+                    statusText = `<span style="color: blue; font-weight: bold;">COMPLETADA</span>`;
+                    break;
+                default:
+                    statusText = app.status;
+            }
+
+            row.innerHTML = `<td>${app.date}</td><td>${app.time}</td><td>${app.client}</td><td>${app.barber}</td><td>${app.store}</td><td>${app.service}</td><td>${statusText}</td>`;
+        });
+    }
+
+    function updateStoreSelect() {
+        const stores = JSON.parse(localStorage.getItem('stores')) || [];
+        const select = document.getElementById('barber-store-select');
+        select.innerHTML = '<option value="">Selecciona una Peluquería</option>';
+        stores.forEach(store => {
+            const option = document.createElement('option');
+            option.value = store.name;
+            option.textContent = store.name;
+            select.appendChild(option);
+        });
+    }
+
+    const navButtons = document.querySelectorAll('#admin-panel-container nav button');
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const sections = document.querySelectorAll('#admin-panel-container .section');
+            sections.forEach(sec => sec.style.display = 'none');
+            const targetSection = document.getElementById(button.id.replace('-btn', '-section'));
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            saveAndRenderAll();
+        });
+    });
+
+    switchView('client');
+</script>
+</body>
+</html>
